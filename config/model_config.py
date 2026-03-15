@@ -7,7 +7,7 @@ class ModelConfig:
     # 模型基础
     model_name: str = "hfl/chinese-roberta-wwm-ext"
     num_labels: int = 3          # 0=负面 1=中性 2=正面
-    max_length: int = 128        # TapTap 评论普遍较短，128 足够
+    max_length: int = 256        # TapTap 评论普遍较短，256 足够覆盖长评论
 
     # 训练（RTX 4070 Super 12GB）
     batch_size: int = 32

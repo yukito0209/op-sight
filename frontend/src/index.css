@@ -1,0 +1,45 @@
+/* ── 设计 token ────────────────────────────────── */
+:root {
+  --bg: #F7F4EF;
+  --surface: #FDFCFA;
+  --border: #E8E3DC;
+  --border-focus: #DA7756;
+  --text-primary: #1A1A1A;
+  --text-secondary: #555;
+  --text-muted: #999;
+  --accent: #DA7756;
+  --accent-light: #FAF0EB;
+  --btn-bg: #2D2D2D;
+  --btn-hover: #444;
+  --card-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  --radius: 12px;
+  --font-ui: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Source Serif 4', Georgia, serif;
+}
+
+/* ── 全局重置 ──────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── 动画 ──────────────────────────────────────── */
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.result-enter {
+  animation: slideUpFade 0.35s ease-out both;
+}
+
+/* ── 滚动条美化 ────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D4CFC9; border-radius: 3px; }

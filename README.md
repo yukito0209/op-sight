@@ -47,26 +47,29 @@ train: 31,989 条  │  val: 3,998 条  │  test: 3,998 条
 
 在预训练 RoBERTa 基础上接分类头（`BertForSequenceClassification`），扩展了 20 个游戏领域词汇（`原神`、`圣遗物`、`yyds`、`坐牢`等），使这些高频词不再被拆分为子词。
 
+推理层（`inference/sentiment_analyzer.py`）使用 `AutoTokenizer` / `AutoModelForSequenceClassification` 加载，与具体模型实现解耦，便于后续替换 backbone。
+
 ### 4. 训练策略
 
-| 超参数       | 值                                  |
-| ------------ | ----------------------------------- |
-| 最大序列长度 | 128                                 |
-| Batch size   | 32（梯度累积 ×2 = 有效 64）        |
-| 学习率       | 2e-5                                |
-| 训练轮数     | 5 epoch（EarlyStopping patience=3） |
-| 优化器       | AdamW + Weight Decay 0.01           |
-| 学习率调度   | Linear Warmup（10%）→ Linear Decay |
-| 混合精度     | FP16（CUDA）                        |
+| 超参数         | 值                                  |
+| -------------- | ----------------------------------- |
+| 最大序列长度   | 256                                 |
+| Batch size     | 32（梯度累积 ×2 = 有效 64）        |
+| 学习率         | 2e-5                                |
+| 训练轮数       | 5 epoch（EarlyStopping patience=3） |
+| 优化器         | AdamW + Weight Decay 0.01           |
+| 学习率调度     | Linear Warmup（10%）→ Linear Decay |
+| 混合精度       | FP16（CUDA）                        |
+| Label Smoothing | 0.1（缓解弱监督标签噪声）          |
 
 **类别权重损失**（应对中性类严重不足）：
 
 ```python
-CrossEntropyLoss(weight=[1.0, 3.5, 0.7])
+CrossEntropyLoss(weight=[1.0, 3.5, 0.7], label_smoothing=0.1)
 #               negative  neutral  positive
 ```
 
-中性样本（3349 条）仅为正面（17695 条）的 19%，赋予 3.5× 权重显著改善中性召回率。
+中性样本（3349 条）仅为正面（17695 条）的 19%，赋予 3.5× 权重显著改善中性召回率。Label Smoothing 则缓解弱监督标注（3 星评论）带来的标签噪声。
 
 ### 5. 反讽检测
 
@@ -122,6 +125,7 @@ op-sight/
 │   ├── src/
 │   │   ├── components/SentimentAnalyzer.tsx
 │   │   ├── api/sentiment.ts
+│   │   ├── index.css          # 全局样式与动画
 │   │   └── types.ts
 │   └── vite.config.ts         # Proxy /analyze → :8000
 ├── scripts/
@@ -212,7 +216,8 @@ curl -X POST http://localhost:8000/analyze/batch \
 
 ### 模型层
 
-- **更大模型**：替换为 `hfl/chinese-macbert-large`（330M）或 `THUDM/chatglm3-6b`，预期 macro F1 可提升 5-8%
+- **换用情感预训练模型**：替换为 `IDEA-CCNL/Erlangshen-Roberta-110M-Sentiment`（已在中文情感数据集上预训练），无需修改训练代码即可提升起点
+- **更大规模模型**：`hfl/chinese-macbert-large`（330M）或 Qwen2.5-1.5B（decoder-only fine-tune），预期 macro F1 可提升 5–10%
 - **多任务学习**：情感分类 + 问题归因联合训练，共享表示以提升归因准确率
 - **对比学习**：引入 SimCSE / SupCon Loss，增强类间距离
 

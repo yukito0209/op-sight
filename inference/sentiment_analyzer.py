@@ -3,7 +3,7 @@ from typing import Any
 
 import torch
 import torch.nn.functional as F
-from transformers import BertForSequenceClassification, BertTokenizer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from config.model_config import ID2LABEL, ID2LABEL_ZH
 from data.slang_dict import (
@@ -24,8 +24,12 @@ class GameSentimentAnalyzer:
         self.device = device or ("cuda" if torch.cuda.is_available() else "cpu")
         print(f"使用设备：{self.device}")
 
-        self.tokenizer = BertTokenizer.from_pretrained(model_path)
-        self.model = BertForSequenceClassification.from_pretrained(model_path)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_path)
+        self.tokenizer.padding_side = "left"
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_path)
+        self.model.config.pad_token_id = self.tokenizer.pad_token_id
         self.model.to(self.device)
         self.model.eval()
 
@@ -95,7 +99,7 @@ class GameSentimentAnalyzer:
     def _model_inference(self, text: str) -> tuple[str, float, list[float]]:
         inputs = self.tokenizer(
             text,
-            max_length=128,
+            max_length=256,
             padding="max_length",
             truncation=True,
             return_tensors="pt",

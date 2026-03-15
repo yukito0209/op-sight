@@ -38,9 +38,9 @@ class WeightedTrainer(Trainer):
             w = torch.tensor(class_weights, dtype=torch.float32)
             if torch.cuda.is_available():
                 w = w.cuda()
-            self.loss_fn = nn.CrossEntropyLoss(weight=w)
+            self.loss_fn = nn.CrossEntropyLoss(weight=w, label_smoothing=0.1)
         else:
-            self.loss_fn = nn.CrossEntropyLoss()
+            self.loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
 
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         labels = inputs.pop("labels")
