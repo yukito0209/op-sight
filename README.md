@@ -8,6 +8,8 @@
 
 **技术栈**：Chinese RoBERTa + FastAPI + React/TypeScript
 
+![1773563716468](image/README/1773563716468.png)
+
 ---
 
 ## 实现原理
